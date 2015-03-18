@@ -10,11 +10,12 @@ question = "site:stackoverflow.com "+" ".join(sys.argv[1:])
 base = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&'
 query = urllib.urlencode({'q' : question})
 response = urllib.urlopen(base + query).read()
-data = json.loads(response)
-question_url = data['responseData']['results'][0]['url']
+datajson = json.loads(response)
+question_url = datajson['responseData']['results'][0]['url']
 
 question_id=[ int(word) for word in question_url.split('/') if word.isdigit() ][0]
 
+print question_id
 query="https://api.stackexchange.com/2.2/questions/"+str(question_id)+"?order=desc&site=stackoverflow&filter=withbody"
 
 request = urllib2.Request(query)
@@ -31,7 +32,7 @@ print "---------------------------------------------"
 
 print question
 
-query2="https://api.stackexchange.com/2.2/questions/"+str(question_id)+"/answers?order=desc&min=0&max=0&sort=votes&site=stackoverflow&filter=withbody"
+query="https://api.stackexchange.com/2.2/questions/"+str(question_id)+"/answers?order=desc&sort=votes&site=stackoverflow&filter=withbody"
 
 request = urllib2.Request(query)
 request.add_header('Accept-encoding', 'gzip')
@@ -41,7 +42,9 @@ if response.info().get('Content-Encoding') == 'gzip':
       f = gzip.GzipFile(fileobj=buf)
       data = f.read()
 
+
 datajson=json.loads(data)
+print datajson
 answer = datajson["items"][0]["body"]
 
 print "---------------------------------------------"
