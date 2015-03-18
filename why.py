@@ -4,6 +4,8 @@ import urllib, urllib2, sys, json
 from bs4 import BeautifulSoup
 from StringIO import StringIO
 import gzip
+import os
+from subprocess import Popen, PIPE, STDOUT
 
 question = "site:stackoverflow.com "+" ".join(sys.argv[1:])
 
@@ -15,7 +17,7 @@ question_url = datajson['responseData']['results'][0]['url']
 
 question_id=[ int(word) for word in question_url.split('/') if word.isdigit() ][0]
 
-print question_id
+#print question_id
 query="https://api.stackexchange.com/2.2/questions/"+str(question_id)+"?order=desc&site=stackoverflow&filter=withbody"
 
 request = urllib2.Request(query)
@@ -28,9 +30,6 @@ if response.info().get('Content-Encoding') == 'gzip':
 
 datajson=json.loads(data)
 question=datajson["items"][0]["body"]
-print "---------------------------------------------"
-
-print question
 
 query="https://api.stackexchange.com/2.2/questions/"+str(question_id)+"/answers?order=desc&sort=votes&site=stackoverflow&filter=withbody"
 
@@ -44,11 +43,14 @@ if response.info().get('Content-Encoding') == 'gzip':
 
 
 datajson=json.loads(data)
-print datajson
+#print datajson
 answer = datajson["items"][0]["body"]
 
-print "---------------------------------------------"
-print answer
+#p = Popen(['w3m','-T', 'text/html','-dump'],stdin=PIPE)  
+#p.communicate(question+"<p>-------<b>toto</b>-----------</p>"+answer)
+p = Popen(['pandoc','-f', 'html', '-t','man'],stdin=PIPE,stdout=PIPE)  
+toto=p.communicate(question+"<p>-------<b>toto</b>-----------</p>"+answer)
+groff=""
+p2 = Popen(['groffer','--mode','tty'],stdin=PIPE)  
+p2.communicate(toto[0])
 
-html=urllib.urlopen(question_url).read()
-soup=BeautifulSoup(html)
