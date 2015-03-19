@@ -18,9 +18,8 @@ class GoogleHandler:
 
 class SearchEngineHandler:
 
-  def __init__(self,site="google"):
-    self.site=site
-    if site=="google":
+  def __init__(self,engine="google"):
+    if engine=="google":
       self.handler=GoogleHandler()
     else:
       raise ValueError("This search engine is not supported")
