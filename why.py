@@ -100,7 +100,7 @@ question_id=searchHandler.search("stackoverflow.com",sys.argv[1:])
 question, answers_per_rank = get_details_for_question(question_id)
 best_answer = answers_per_rank[max(answers_per_rank.keys())]
 
-p = Popen(['pandoc','-f', 'html', '-t','man'],stdin=PIPE,stdout=PIPE)
+#p = Popen(['pandoc','-f', 'html', '-t','man'],stdin=PIPE,stdout=PIPE)
 
 input_html = \
             '<div><b>' + QUESTION_INTRODUCTION_LINE +'</b></div>' + \
@@ -113,11 +113,14 @@ input_html = \
              best_answer
 print input_html
 
-toto=p.communicate(input_html)
+#toto=p.communicate(input_html)
 #print toto[0]
 #groff=""
-p2 = Popen(['groffer', '--mode', 'tty'],stdin=PIPE)
-p2.communicate(toto[0]) #.replace(".PP",".HP"))
+
+p2 = Popen(['w3m', '-T', 'text/html'],stdin=PIPE)
+p2.communicate(input_html) #.replace(".PP",".HP"))
+#p2 = Popen(['groffer', '--mode', 'tty'],stdin=PIPE)
+#p2.communicate(toto[0]) #.replace(".PP",".HP"))
 
 #p2 = Popen(['groffer','--mode','tty'],stdin=PIPE)  
 #p2.communicate(toto[0].replace(".PP",".HP"))
