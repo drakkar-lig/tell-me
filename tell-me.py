@@ -95,35 +95,52 @@ def get_details_for_question(question_id):
 #  time.sleep()
 
 searchHandler=SearchEngineHandler("google")
-question_id=searchHandler.search("stackoverflow.com",sys.argv[1:])
+ok=0
+while ok!=1:
+  question_id=searchHandler.search("stackoverflow.com",sys.argv[1:])
+  print question_id
+  question, answers_per_rank = get_details_for_question(question_id)
+  best_answer = answers_per_rank[max(answers_per_rank.keys())]
+  
+  #p = Popen(['pandoc','-f', 'html', '-t','man'],stdin=PIPE,stdout=PIPE)
+  
+  input_html = \
+              '<div><b>' + QUESTION_INTRODUCTION_LINE +'</b></div>' + \
+              '<div><b>' + re.sub('.', '-', QUESTION_INTRODUCTION_LINE) + '</b></div>' + \
+               question + \
+              '<p></p>' + \
+              '<p></p>' + \
+              '<div><b>' + ANSWER_INTRODUCTION_LINE + '</b></div>' + \
+              '<div><b>' + re.sub('.', '-', ANSWER_INTRODUCTION_LINE) + '</b></div>' + \
+               best_answer
+  
+  #toto=p.communicate(input_html)
+  #print toto[0]
+  #groff=""
+  
+  #p2 = Popen(['w3m', '-T', 'text/html'],stdin=PIPE)
+  #p2.communicate(input_html) #.replace(".PP",".HP"))
 
-question, answers_per_rank = get_details_for_question(question_id)
-best_answer = answers_per_rank[max(answers_per_rank.keys())]
+  #p2.wait()
+  print "Are you satisfied?"
+  check=0
+  while check!=1:
+    print "(y) yes, (q) question was wrong, (a) answer was wrong :"
+    ans=sys.stdin.read(1)
+    if ans=="q": 
+      check=1
+      print "Trying next question"
+    elif ans=="y":
+      check=1; ok=1;
+    else:
+      print "Please reply y, q or a"
+      
 
-#p = Popen(['pandoc','-f', 'html', '-t','man'],stdin=PIPE,stdout=PIPE)
-
-input_html = \
-            '<div><b>' + QUESTION_INTRODUCTION_LINE +'</b></div>' + \
-            '<div><b>' + re.sub('.', '-', QUESTION_INTRODUCTION_LINE) + '</b></div>' + \
-             question + \
-            '<p></p>' + \
-            '<p></p>' + \
-            '<div><b>' + ANSWER_INTRODUCTION_LINE + '</b></div>' + \
-            '<div><b>' + re.sub('.', '-', ANSWER_INTRODUCTION_LINE) + '</b></div>' + \
-             best_answer
-print input_html
-
-#toto=p.communicate(input_html)
-#print toto[0]
-#groff=""
-
-p2 = Popen(['w3m', '-T', 'text/html'],stdin=PIPE)
-p2.communicate(input_html) #.replace(".PP",".HP"))
-#p2 = Popen(['groffer', '--mode', 'tty'],stdin=PIPE)
-#p2.communicate(toto[0]) #.replace(".PP",".HP"))
-
-#p2 = Popen(['groffer','--mode','tty'],stdin=PIPE)  
-#p2.communicate(toto[0].replace(".PP",".HP"))
-
-
-
+  #p2 = Popen(['groffer', '--mode', 'tty'],stdin=PIPE)
+  #p2.communicate(toto[0]) #.replace(".PP",".HP"))
+  
+  #p2 = Popen(['groffer','--mode','tty'],stdin=PIPE)  
+  #p2.communicate(toto[0].replace(".PP",".HP"))
+  
+  
+  
