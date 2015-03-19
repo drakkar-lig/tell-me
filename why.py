@@ -95,7 +95,6 @@ def get_details_for_question(question_id):
 searchHandler=SearchEngineHandler("google")
 question_id=searchHandler.search("stackoverflow.com",sys.argv[1:])
 
-question_id=ask_google("stackoverflow.com",sys.argv[1:])
 question, answers_per_rank = get_details_for_question(question_id)
 best_answer = answers_per_rank[max(answers_per_rank.keys())]
 

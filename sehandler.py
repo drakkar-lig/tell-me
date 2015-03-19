@@ -24,4 +24,5 @@ class SearchEngineHandler:
       self.handler=GoogleHandler()
 
   def search(self,site,question):
-    self.handler.search(site,question)
+    question_id= self.handler.search(site,question)
+    return question_id
