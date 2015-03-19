@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-import urllib, urllib2, sys, json
+import urllib, urllib2, sys, json, gzip, os, time, re
 from bs4 import BeautifulSoup
 from StringIO import StringIO
-import gzip
-import os
 from subprocess import Popen, PIPE, STDOUT
-import time
 from sehandler import SearchEngineHandler
+
+QUESTION_INTRODUCTION_LINE= \
+    "The following question seems related to yours:"
+ANSWER_INTRODUCTION_LINE= \
+    "And the best answer was:"
 
 def ask_google(site,question):
 
@@ -98,16 +100,27 @@ question_id=searchHandler.search("stackoverflow.com",sys.argv[1:])
 question, answers_per_rank = get_details_for_question(question_id)
 best_answer = answers_per_rank[max(answers_per_rank.keys())]
 
-#p = Popen(['w3m','-T', 'text/html','-dump'],stdin=PIPE)  
-#p.communicate(question+"<p>-------<b>toto</b>-----------</p>"+answer)
-p = Popen(['pandoc','-f', 'html', '-t','man'],stdin=PIPE,stdout=PIPE)  
-toto=p.communicate(question+"<p>-------<b>toto</b>-----------</p>"+best_answer)
-print toto[0]
-groff=""
-p2 = Popen(['groffer','--tty'],stdin=PIPE)  
-p2.communicate(toto[0])
+p = Popen(['pandoc','-f', 'html', '-t','man'],stdin=PIPE,stdout=PIPE)
+
+input_html = \
+            '<div><b>' + QUESTION_INTRODUCTION_LINE +'</b></div>' + \
+            '<div><b>' + re.sub('.', '-', QUESTION_INTRODUCTION_LINE) + '</b></div>' + \
+             question + \
+            '<p></p>' + \
+            '<p></p>' + \
+            '<div><b>' + ANSWER_INTRODUCTION_LINE + '</b></div>' + \
+            '<div><b>' + re.sub('.', '-', ANSWER_INTRODUCTION_LINE) + '</b></div>' + \
+             best_answer
+print input_html
+
+toto=p.communicate(input_html)
+#print toto[0]
+#groff=""
+p2 = Popen(['groffer', '--mode', 'tty'],stdin=PIPE)
+p2.communicate(toto[0]) #.replace(".PP",".HP"))
 
 #p2 = Popen(['groffer','--mode','tty'],stdin=PIPE)  
 #p2.communicate(toto[0].replace(".PP",".HP"))
+
 
 
