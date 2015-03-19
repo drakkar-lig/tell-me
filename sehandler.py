@@ -22,6 +22,8 @@ class SearchEngineHandler:
     self.site=site
     if site=="google":
       self.handler=GoogleHandler()
+    else:
+      raise ValueError("This search engine is not supported")
 
   def search(self,site,question):
     question_id= self.handler.search(site,question)
