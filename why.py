@@ -7,7 +7,7 @@ import gzip
 import os
 from subprocess import Popen, PIPE, STDOUT
 import time
-
+from sehandler import SearchEngineHandler
 
 def ask_google(site,question):
 
@@ -91,6 +91,9 @@ def get_details_for_question(question_id):
 #
 #if backoff>0:
 #  time.sleep()
+
+searchHandler=SearchEngineHandler("google")
+question_id=searchHandler.search("stackoverflow.com",sys.argv[1:])
 
 question_id=ask_google("stackoverflow.com",sys.argv[1:])
 question, answers_per_rank = get_details_for_question(question_id)
