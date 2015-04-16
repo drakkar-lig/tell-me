@@ -26,15 +26,18 @@ def ask_google(site,question):
 
 def get_details_for_question(question_id):
     # we use the rss feed (no usage limitations)
-    html = urllib2.urlopen('http://stackoverflow.com/feeds/question/%d' % question_id)
+    html = urllib2.urlopen('http://stackoverflow.com/questions/%d' % question_id)
     soup = BeautifulSoup(html)
-    feed_entries = soup.find_all('entry')
-    # 1st entry is the question
-    question_html = feed_entries[0].summary.string
-    # remaining entries are answers
-    answers_per_rank = { int(entry.find('re:rank').string) : \
-            entry.summary.string for entry in feed_entries[1:] }
-    return question_html, answers_per_rank
+    question_html=soup.find_all('div',{'class':'post-text'})
+    #print question_html[0]
+    #print question_html[1]
+    #feed_entries = soup.find_all('entry')
+    ## 1st entry is the question
+    #question_html = feed_entries[0].summary.string
+    ## remaining entries are answers
+    #answers_per_rank = { int(entry.find('re:rank').string) : \
+    #        entry.summary.string for entry in feed_entries[1:] }
+    return question_html[0].renderContents(), question_html[1:]
 
 
 
@@ -69,7 +72,7 @@ def get_details_for_question(question_id):
 #query="https://api.stackexchange.com/2.2/questions/"+str(question_id)+"/answers?order=desc&sort=votes&site=stackoverflow&filter=withbody"
 #
 #request = urllib2.Request(query)
-#request.add_header('Accept-encoding', 'gzip')
+#request.add_header('Accept-encodng', 'gzip')
 #response = urllib2.urlopen(request)
 #if response.info().get('Content-Encoding') == 'gzip':
 #      buf = StringIO( response.read())
@@ -94,53 +97,59 @@ def get_details_for_question(question_id):
 #if backoff>0:
 #  time.sleep()
 
+
 searchHandler=SearchEngineHandler("google")
-ok=0
-while ok!=1:
+question=0
+while question!=1:
   question_id=searchHandler.search("stackoverflow.com",sys.argv[1:])
   print question_id
   question, answers_per_rank = get_details_for_question(question_id)
-  best_answer = answers_per_rank[max(answers_per_rank.keys())]
   
-  #p = Popen(['pandoc','-f', 'html', '-t','man'],stdin=PIPE,stdout=PIPE)
+  #p = Popen(['pandoc','-s','-f', 'html', '-t','man'],stdin=PIPE,stdout=PIPE)
   
-  input_html = \
-              '<div><b>' + QUESTION_INTRODUCTION_LINE +'</b></div>' + \
-              '<div><b>' + re.sub('.', '-', QUESTION_INTRODUCTION_LINE) + '</b></div>' + \
-               question + \
-              '<p></p>' + \
-              '<p></p>' + \
-              '<div><b>' + ANSWER_INTRODUCTION_LINE + '</b></div>' + \
-              '<div><b>' + re.sub('.', '-', ANSWER_INTRODUCTION_LINE) + '</b></div>' + \
-               best_answer
-  
-  #toto=p.communicate(input_html)
-  #print toto[0]
-  #groff=""
-  
-  #p2 = Popen(['w3m', '-T', 'text/html'],stdin=PIPE)
-  #p2.communicate(input_html) #.replace(".PP",".HP"))
+  answer=0
+  answerindex=0
+  while answer!=1 and answerindex<len(answers_per_rank):
+    best_answer = answers_per_rank[answerindex].renderContents()
+    input_html = \
+                '<div><b>' + QUESTION_INTRODUCTION_LINE +'</b></div>' + \
+                '<div><b>' + re.sub('.', '-', QUESTION_INTRODUCTION_LINE) + '</b></div>' + \
+                 question + \
+                '<p></p>' + \
+                '<p></p>' + \
+                '<div><b>' + ANSWER_INTRODUCTION_LINE + '</b></div>' + \
+                '<div><b></b></div>' + re.sub('.', '-', ANSWER_INTRODUCTION_LINE) + '</b></div>' + \
+                 best_answer
+    
+    
+    
+    p2 = Popen(['w3m', '-T', 'text/html', '-cols','80','-dump'],stdin=PIPE)
+    p2.communicate(input_html)
+    #sdout=p.communicate(input_html) #.replace(".PP",".HP"))
 
-  #p2.wait()
-  print "Are you satisfied?"
-  check=0
-  while check!=1:
-    print "(y) yes, (q) question was wrong, (a) answer was wrong :"
-    ans=sys.stdin.read(1)
-    if ans=="q": 
-      check=1
-      print "Trying next question"
-    elif ans=="y":
-      check=1; ok=1;
-    else:
-      print "Please reply y, q or a"
-      
+    #p2 = Popen(['groffer','--mode','tty'],stdin=PIPE)
+    #p2.communicate(sdout[0])
+    p2.wait()
+    print "Are you satisfied?"
+    check=0
+    while check!=1:
+      ans = raw_input("(y) yes, (q) question was wrong, (a) answer was wrong : ")
+      if ans=="q": 
+        check=1;answer=1
+        print "Trying next question"
+      elif ans=="y":
+        check=1; question=1;answer=1
+      elif ans=="a":
+        check=1;answerindex+=1
+      else:
+        print "Please reply y, q or a"
+        
 
-  #p2 = Popen(['groffer', '--mode', 'tty'],stdin=PIPE)
-  #p2.communicate(toto[0]) #.replace(".PP",".HP"))
-  
-  #p2 = Popen(['groffer','--mode','tty'],stdin=PIPE)  
-  #p2.communicate(toto[0].replace(".PP",".HP"))
-  
-  
-  
+    #p2 = Popen(['groffer', '--mode', 'tty'],stdin=PIPE)
+    #p2.communicate(toto[0]) #.replace(".PP",".HP"))
+    
+    #p2 = Popen(['groffer','--mode','tty'],stdin=PIPE)  
+    #p2.communicate(toto[0].replace(".PP",".HP"))
+    
+    
+    
