@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 
-import urllib, urllib2, sys, json, gzip, os, time, re
-from bs4 import BeautifulSoup
-from StringIO import StringIO
-from subprocess import Popen, PIPE, STDOUT
+#import urllib, urllib2, sys, json, gzip, os, time, re
+#from bs4 import BeautifulSoup
+#from StringIO import StringIO
+import sys
 from sehandler import SearchEngineHandler
 from sitehandler import SiteHandler
+from renderer import Renderer
 
-QUESTION_INTRODUCTION_LINE= \
-    "The following question seems related to yours:"
-ANSWER_INTRODUCTION_LINE= \
-    "And the best answer was:"
 
 #def ask_google(site,question):
 #
@@ -25,20 +22,20 @@ ANSWER_INTRODUCTION_LINE= \
 #    question_id=[ int(word) for word in question_url.split('/') if word.isdigit() ][0]
 #    return question_id
 
-def get_details_for_question(question_id):
-    # we use the html page (no usage limitations)
-    html = urllib2.urlopen('http://stackoverflow.com/questions/%d' % question_id)
-    soup = BeautifulSoup(html)
-    question_html=soup.find_all('div',{'class':'post-text'})
-    #print question_html[0]
-    #print question_html[1]
-    #feed_entries = soup.find_all('entry')
-    ## 1st entry is the question
-    #question_html = feed_entries[0].summary.string
-    ## remaining entries are answers
-    #answers_per_rank = { int(entry.find('re:rank').string) : \
-    #        entry.summary.string for entry in feed_entries[1:] }
-    return question_html[0].renderContents(), question_html[1:]
+#def get_details_for_question(question_id):
+#    # we use the html page (no usage limitations)
+#    html = urllib2.urlopen('http://stackoverflow.com/questions/%d' % question_id)
+#    soup = BeautifulSoup(html)
+#    question_html=soup.find_all('div',{'class':'post-text'})
+#    #print question_html[0]
+#    #print question_html[1]
+#    #feed_entries = soup.find_all('entry')
+#    ## 1st entry is the question
+#    #question_html = feed_entries[0].summary.string
+#    ## remaining entries are answers
+#    #answers_per_rank = { int(entry.find('re:rank').string) : \
+#    #        entry.summary.string for entry in feed_entries[1:] }
+#    return question_html[0].renderContents(), question_html[1:]
 
 
 
@@ -112,25 +109,25 @@ while question!=1:
   while answer!=1:
 
     question, answer = siteHandler.get(question_id)
-    input_html = \
-                '<div><b>' + QUESTION_INTRODUCTION_LINE +'</b></div>' + \
-                '<div><b>' + re.sub('.', '-', QUESTION_INTRODUCTION_LINE) + '</b></div>' + \
-                 question + \
-                '<p></p>' + \
-                '<p></p>' + \
-                '<div><b>' + ANSWER_INTRODUCTION_LINE + '</b></div>' + \
-                '<div><b></b></div>' + re.sub('.', '-', ANSWER_INTRODUCTION_LINE) + '</b></div>' + \
-                 answer
+    renderer=Renderer(question,answer)
+    renderer.render()
+    #input_html = \
+    #            '<div><b>' + QUESTION_INTRODUCTION_LINE +'</b></div>' + \
+    #            '<div><b>' + re.sub('.', '-', QUESTION_INTRODUCTION_LINE) + '</b></div>' + \
+    #             question + \
+    #            '<p></p>' + \
+    #            '<p></p>' + \
+    #            '<div><b>' + ANSWER_INTRODUCTION_LINE + '</b></div>' + \
+    #            '<div><b></b></div>' + re.sub('.', '-', ANSWER_INTRODUCTION_LINE) + '</b></div>' + \
+    #             answer
     
     
     
-    p2 = Popen(['w3m', '-T', 'text/html', '-cols','80','-dump'],stdin=PIPE)
-    p2.communicate(input_html)
     #sdout=p.communicate(input_html) #.replace(".PP",".HP"))
 
     #p2 = Popen(['groffer','--mode','tty'],stdin=PIPE)
     #p2.communicate(sdout[0])
-    p2.wait()
+    #p2.wait()
     print "Are you satisfied?"
     check=0
     while check!=1:
