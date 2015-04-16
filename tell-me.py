@@ -5,27 +5,28 @@ from bs4 import BeautifulSoup
 from StringIO import StringIO
 from subprocess import Popen, PIPE, STDOUT
 from sehandler import SearchEngineHandler
+from sitehandler import SiteHandler
 
 QUESTION_INTRODUCTION_LINE= \
     "The following question seems related to yours:"
 ANSWER_INTRODUCTION_LINE= \
     "And the best answer was:"
 
-def ask_google(site,question):
-
-    question = "site:"+site+" "+" ".join(question)
-
-    base = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&'
-    query = urllib.urlencode({'q' : question})
-    response = urllib.urlopen(base + query).read()
-    datajson = json.loads(response)
-    question_url = datajson['responseData']['results'][0]['url']
-
-    question_id=[ int(word) for word in question_url.split('/') if word.isdigit() ][0]
-    return question_id
+#def ask_google(site,question):
+#
+#    question = "site:"+site+" "+" ".join(question)
+#
+#    base = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&'
+#    query = urllib.urlencode({'q' : question})
+#    response = urllib.urlopen(base + query).read()
+#    datajson = json.loads(response)
+#    question_url = datajson['responseData']['results'][0]['url']
+#
+#    question_id=[ int(word) for word in question_url.split('/') if word.isdigit() ][0]
+#    return question_id
 
 def get_details_for_question(question_id):
-    # we use the rss feed (no usage limitations)
+    # we use the html page (no usage limitations)
     html = urllib2.urlopen('http://stackoverflow.com/questions/%d' % question_id)
     soup = BeautifulSoup(html)
     question_html=soup.find_all('div',{'class':'post-text'})
@@ -99,18 +100,18 @@ def get_details_for_question(question_id):
 
 
 searchHandler=SearchEngineHandler("google")
+siteHandler=SiteHandler("stackoverflow")
 question=0
 while question!=1:
   question_id=searchHandler.search("stackoverflow.com",sys.argv[1:])
   print question_id
-  question, answers_per_rank = get_details_for_question(question_id)
   
   #p = Popen(['pandoc','-s','-f', 'html', '-t','man'],stdin=PIPE,stdout=PIPE)
   
   answer=0
-  answerindex=0
-  while answer!=1 and answerindex<len(answers_per_rank):
-    best_answer = answers_per_rank[answerindex].renderContents()
+  while answer!=1:
+
+    question, answer = siteHandler.get(question_id)
     input_html = \
                 '<div><b>' + QUESTION_INTRODUCTION_LINE +'</b></div>' + \
                 '<div><b>' + re.sub('.', '-', QUESTION_INTRODUCTION_LINE) + '</b></div>' + \
@@ -119,7 +120,7 @@ while question!=1:
                 '<p></p>' + \
                 '<div><b>' + ANSWER_INTRODUCTION_LINE + '</b></div>' + \
                 '<div><b></b></div>' + re.sub('.', '-', ANSWER_INTRODUCTION_LINE) + '</b></div>' + \
-                 best_answer
+                 answer
     
     
     
@@ -140,7 +141,7 @@ while question!=1:
       elif ans=="y":
         check=1; question=1;answer=1
       elif ans=="a":
-        check=1;answerindex+=1
+        check=1;
       else:
         print "Please reply y, q or a"
         
